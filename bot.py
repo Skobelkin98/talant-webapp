@@ -7,8 +7,8 @@ TOKEN = "8219879166:AAHpbP7T35gTV1Ry1F9T37c69mzbt_RehDw"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Ссылка на наше веб-приложение (пока локальная, потом заменим на онлайн)
-WEB_APP_URL = "http://127.0.0.1:8000"
+# Ссылка на наше веб-приложение
+WEB_APP_URL = "https://talant-webapp-production.up.railway.app"
 
 @dp.message(F.text == "/start")
 async def start(message: Message):
@@ -20,6 +20,7 @@ async def start(message: Message):
 
 async def main():
     print("Бот запущен...")
+    await bot.set_webhook(url="https://talant-webapp-production.up.railway.app/webhook")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
