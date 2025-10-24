@@ -1,27 +1,28 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Система талантов</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talant System</title>
     <link rel="stylesheet" href="/static/style.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="icon" href="/static/icon.ico" type="image/x-icon">
-
 </head>
 <body>
-    <div class="container">
-        <h1>🌟 Система талантов 🌟</h1>
-        <input id="search" placeholder="Поиск участника...">
-        <div id="table"></div>
+    <h1>Система талантов</h1>
+    <div id="data"></div>
 
-        <div class="buttons">
-            <button onclick="addUser()">➕ Добавить</button>
-            <button onclick="changePoints()">✏️ Изменить</button>
-            <button onclick="deleteUser()">🗑 Удалить</button>
-        </div>
+    <div id="addForm">
+        <h3>Добавить пользователя</h3>
+        <input type="text" id="name" placeholder="Имя">
+        <input type="number" id="points" placeholder="Очки">
+        <button onclick="addUser()">Добавить</button>
+    </div>
+
+    <div id="deleteForm">
+        <h3>Удалить пользователя</h3>
+        <input type="text" id="name" placeholder="Имя">
+        <button onclick="deleteUser()">Удалить</button>
     </div>
 
     <script src="/static/script.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </body>
 </html>
