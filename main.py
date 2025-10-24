@@ -68,5 +68,6 @@ async def delete_user(request: Request):
 @app.post("/webhook")
 async def webhook(request: Request):
     data = await request.json()
-    # Здесь можно добавить логику обработки (например, передачу в aiogram)
-    return JSONResponse({"status": "ok"})
+    # Логика обработки (можно пропустить для теста)
+    print(data)  # Для отладки в логах
+    return JSONResponse(status_code=200, content={})
