@@ -1,62 +1,47 @@
-let data = {};
-
+// script.js
 async function loadData() {
-    const res = await fetch("/api/data");
-    data = await res.json();
-    renderTable();
-}
-
-function renderTable(filter = "") {
-    const table = document.getElementById("table");
-    table.innerHTML = "";
-    const entries = Object.entries(data)
-        .filter(([name]) => name.toLowerCase().includes(filter.toLowerCase()));
-    entries.forEach(([name, points]) => {
-        const div = document.createElement("div");
-        div.className = "person";
-        div.innerHTML = `<span>${name}</span><span>${points} баллов</span>`;
-        table.appendChild(div);
-    });
+    const response = await fetch('/api/data');
+    const data = await response.json();
+    displayData(data);
 }
 
 async function addUser() {
-    const name = prompt("Имя и фамилия:");
-    if (!name) return;
-    const points = parseInt(prompt("Количество баллов (можно отрицательное):") || "0");
-    await fetch("/api/add", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({name, points})
+    const name = document.getElementById('name').value;
+    const points = parseInt(document.getElementById('points').value) || 0;
+    const response = await fetch('/api/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, points })
     });
-    await loadData();
-}
-
-async function changePoints() {
-    const name = prompt("Кому изменить баллы?");
-    if (!name) return;
-    const points = parseInt(prompt("Изменение (например, 5 или -10):") || "0");
-    await fetch("/api/add", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({name, points})
-    });
-    await loadData();
+    const result = await response.json();
+    displayData(result.data);
 }
 
 async function deleteUser() {
-    const name = prompt("Кого удалить?");
-    if (!name) return;
-    if (!confirm(`Удалить ${name}?`)) return;
-    await fetch("/api/delete", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({name})
+    const name = document.getElementById('name').value;
+    const response = await fetch('/api/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
     });
-    await loadData();
+    const result = await response.json();
+    displayData(result.data);
 }
 
-document.getElementById("search").addEventListener("input", (e) => {
-    renderTable(e.target.value);
-});
+function displayData(data) {
+    const dataDiv = document.getElementById('data');
+    dataDiv.innerHTML = Object.entries(data).map(([name, points]) => `${name}: ${points}`).join('<br>');
+}
 
-loadData();
+// Проверка прав
+async function checkPermissions() {
+    const username = window.Telegram.WebApp.initDataUnsafe?.user?.username || '';
+    const isEditor = ['Pavel_Skobyolkin'].includes(username); // Список редакторов
+    document.getElementById('addForm').style.display = isEditor ? 'block' : 'none';
+    document.getElementById('deleteForm').style.display = isEditor ? 'block' : 'none';
+}
+
+window.onload = () => {
+    loadData();
+    checkPermissions();
+};
