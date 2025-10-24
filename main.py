@@ -24,7 +24,6 @@ templates = Jinja2Templates(directory="templates")
 def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-
 # ---------- API ----------
 def load_data():
     try:
@@ -36,16 +35,13 @@ def load_data():
     except Exception:
         return {}
 
-
 def save_data(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-
 @app.get("/api/data", response_class=JSONResponse)
 def get_data():
     return load_data()
-
 
 @app.post("/api/add", response_class=JSONResponse)
 async def add_user(request: Request):
@@ -58,7 +54,6 @@ async def add_user(request: Request):
         save_data(data)
     return {"status": "ok", "data": data}
 
-
 @app.post("/api/delete", response_class=JSONResponse)
 async def delete_user(request: Request):
     payload = await request.json()
@@ -68,3 +63,10 @@ async def delete_user(request: Request):
         del data[name]
         save_data(data)
     return {"status": "ok", "data": data}
+
+# ---------- Webhook от Telegram ----------
+@app.post("/webhook")
+async def webhook(request: Request):
+    data = await request.json()
+    # Здесь можно добавить логику обработки (например, передачу в aiogram)
+    return JSONResponse({"status": "ok"})
