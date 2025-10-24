@@ -21,52 +21,46 @@ function renderTable(filter = "") {
 
 async function addUser() {
     const username = window.Telegram.WebApp.initDataUnsafe?.user?.username || '';
-    if (!['Pavel_Skobyolkin'].includes(username)) {
-        alert("У вас нет прав для редактирования!");
-        return;
-    }
     const name = prompt("Имя и фамилия:");
     if (!name) return;
     const points = parseInt(prompt("Количество баллов (можно отрицательное):") || "0");
-    await fetch("/api/add", {
+    const response = await fetch("/api/add", {
         method: "POST",
         headers: {"Content-Type": "application/json", "X-Telegram-Username": username},
         body: JSON.stringify({name, points})
     });
+    const result = await response.json();
+    if (result.status === "error") alert(result.message);
     await loadData();
 }
 
 async function changePoints() {
     const username = window.Telegram.WebApp.initDataUnsafe?.user?.username || '';
-    if (!['Pavel_Skobyolkin'].includes(username)) {
-        alert("У вас нет прав для редактирования!");
-        return;
-    }
     const name = prompt("Кому изменить баллы?");
     if (!name) return;
     const points = parseInt(prompt("Изменение (например, 5 или -10):") || "0");
-    await fetch("/api/add", {
+    const response = await fetch("/api/add", {
         method: "POST",
         headers: {"Content-Type": "application/json", "X-Telegram-Username": username},
         body: JSON.stringify({name, points})
     });
+    const result = await response.json();
+    if (result.status === "error") alert(result.message);
     await loadData();
 }
 
 async function deleteUser() {
     const username = window.Telegram.WebApp.initDataUnsafe?.user?.username || '';
-    if (!['Pavel_Skobyolkin'].includes(username)) {
-        alert("У вас нет прав для редактирования!");
-        return;
-    }
     const name = prompt("Кого удалить?");
     if (!name) return;
     if (!confirm(`Удалить ${name}?`)) return;
-    await fetch("/api/delete", {
+    const response = await fetch("/api/delete", {
         method: "POST",
         headers: {"Content-Type": "application/json", "X-Telegram-Username": username},
         body: JSON.stringify({name})
     });
+    const result = await response.json();
+    if (result.status === "error") alert(result.message);
     await loadData();
 }
 
