@@ -13,7 +13,7 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 # Список разрешённых юзернеймов (добавьте нужные, например, свои)
-ALLOWED_EDITORS = {"Pavel_Skobyolkin"}, {"dariaskob"}  # Добавьте другие юзернеймы сюда
+ALLOWED_EDITORS = {"Pavel_Skobyolkin", "dariaskob", "Wolfram183", "artem_Christian"}  # Добавьте другие юзернеймы сюда
 
 app = FastAPI()
 
@@ -96,4 +96,5 @@ async def webhook(request: Request):
     update = Update(**data)
     await dp.feed_update(bot, update)
     return JSONResponse(status_code=200, content={})
+
 
