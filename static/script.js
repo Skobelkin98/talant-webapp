@@ -83,8 +83,8 @@ async function editUser(name) {
         return;
     }
     const newName = prompt("Новое ФИО (оставьте пустым для пропуска):", name);
-    const points = parseInt(prompt("Новые баллы (оставьте пустым для пропуска):", data[name]) || data[name]);
-    if (newName !== null || !isNaN(points)) {
+    const pointsChange = prompt("Изменение баллов (например, 5 или -10, оставьте пустым для пропуска):", "");
+    if (newName !== null || pointsChange !== null) {
         if (newName && newName !== name) {
             await fetch("/api/delete", {
                 method: "POST",
@@ -94,9 +94,10 @@ async function editUser(name) {
             await fetch("/api/add", {
                 method: "POST",
                 headers: {"Content-Type": "application/json", "X-Telegram-Username": username},
-                body: JSON.stringify({name: newName, points})
+                body: JSON.stringify({name: newName, points: pointsChange ? parseInt(pointsChange) : 0})
             });
-        } else if (!isNaN(points)) {
+        } else if (pointsChange !== null) {
+            const points = parseInt(pointsChange) || 0;
             await fetch("/api/add", {
                 method: "POST",
                 headers: {"Content-Type": "application/json", "X-Telegram-Username": username},
