@@ -8,7 +8,6 @@ from aiogram.types import Update
 import asyncio
 import os
 
-# Токен и авторизованные юзернеймы
 TOKEN = "8219879166:AAHpbP7T35gTV1Ry1F9T37c69mzbt_RehDw"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -17,11 +16,9 @@ ALLOWED_EDITORS = {"Pavel_Skobyolkin", "dariaskob", "Wolfram183", "artem_Christi
 
 app = FastAPI()
 
-# Пути
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.path.join(BASE_DIR, "talents.db")
 
-# Инициализация базы данных
 def init_db():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
@@ -31,7 +28,6 @@ def init_db():
 
 init_db()
 
-# Загрузка данных
 def load_data():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
@@ -40,20 +36,17 @@ def load_data():
     conn.close()
     return data
 
-# Сохранение данных
 def save_data(data):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("DELETE FROM talents")  # Очищаем таблицу перед обновлением
-    c.executemany("INSERT INTO talents (name, points) VALUES (?, ?)", data.items())
+    c.execute("DELETE FROM talents")
+    c.executemany("INSERT INTO talents (name, points) VALUES (?, ?)", list(data.items()))
     conn.commit()
     conn.close()
 
-# Подключаем фронтенд
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# Хэндлер для /start
 @dp.message(lambda message: message.text == "/start")
 async def start_handler(update: Update, context=None):
     from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
@@ -62,12 +55,10 @@ async def start_handler(update: Update, context=None):
     ])
     await bot.send_message(update.message.chat.id, "Привет! 👋\nНажми, чтобы открыть систему талантов:", reply_markup=kb)
 
-# Веб-интерфейс
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-# API
 @app.get("/api/data", response_class=JSONResponse)
 def get_data():
     return load_data()
@@ -99,7 +90,6 @@ async def delete_user(request: Request):
         save_data(data)
     return {"status": "ok", "data": data}
 
-# Webhook
 @app.post("/webhook")
 async def webhook(request: Request):
     data = await request.json()
