@@ -70,9 +70,10 @@ async def add_user(request: Request):
     payload = await request.json()
     name = payload.get("name", "").strip()
     points = int(payload.get("points", 0))
-    # Получаем юзернейм из Telegram (если доступен через WebApp)
     username = request.headers.get("X-Telegram-Username", "").strip()
     data = load_data()
+    if not username:
+        return {"status": "error", "message": "No username provided"}
     if username in ALLOWED_EDITORS and name:
         data[name] = data.get(name, 0) + points
         save_data(data)
@@ -84,6 +85,8 @@ async def delete_user(request: Request):
     name = payload.get("name", "").strip()
     username = request.headers.get("X-Telegram-Username", "").strip()
     data = load_data()
+    if not username:
+        return {"status": "error", "message": "No username provided"}
     if username in ALLOWED_EDITORS and name in data:
         del data[name]
         save_data(data)
@@ -96,5 +99,6 @@ async def webhook(request: Request):
     update = Update(**data)
     await dp.feed_update(bot, update)
     return JSONResponse(status_code=200, content={})
+
 
 
