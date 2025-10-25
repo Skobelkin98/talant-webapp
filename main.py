@@ -2,29 +2,52 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import json, os
+import sqlite3
 from aiogram import Bot, Dispatcher
 from aiogram.types import Update
 import asyncio
+import os
 
 # Токен и авторизованные юзернеймы
 TOKEN = "8219879166:AAHpbP7T35gTV1Ry1F9T37c69mzbt_RehDw"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Список разрешённых юзернеймов (добавьте нужные, например, свои)
-ALLOWED_EDITORS = {"Pavel_Skobyolkin", "dariaskob", "Wolfram183", "artem_Christian"}  # Добавьте другие юзернеймы сюда
+ALLOWED_EDITORS = {"Pavel_Skobyolkin", "dariaskob", "Wolfram183", "artem_Christian"}
 
 app = FastAPI()
 
 # Пути
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(BASE_DIR, "data.json")
+DB_FILE = os.path.join(BASE_DIR, "talents.db")
 
-# Гарантируем наличие data.json
-if not os.path.exists(DATA_FILE):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump({}, f, ensure_ascii=False, indent=2)
+# Инициализация базы данных
+def init_db():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS talents (name TEXT PRIMARY KEY, points INTEGER)''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# Загрузка данных
+def load_data():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT name, points FROM talents")
+    data = {row[0]: row[1] for row in c.fetchall()}
+    conn.close()
+    return data
+
+# Сохранение данных
+def save_data(data):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("DELETE FROM talents")  # Очищаем таблицу перед обновлением
+    c.executemany("INSERT INTO talents (name, points) VALUES (?, ?)", data.items())
+    conn.commit()
+    conn.close()
 
 # Подключаем фронтенд
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -38,22 +61,6 @@ async def start_handler(update: Update, context=None):
         [InlineKeyboardButton(text="🚀 Открыть систему талантов", web_app=WebAppInfo(url="https://talant-webapp-production.up.railway.app"))]
     ])
     await bot.send_message(update.message.chat.id, "Привет! 👋\nНажми, чтобы открыть систему талантов:", reply_markup=kb)
-
-# Загрузка данных
-def load_data():
-    try:
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            if not isinstance(data, dict):
-                data = {}
-            return data
-    except Exception:
-        return {}
-
-# Сохранение данных
-def save_data(data):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
 
 # Веб-интерфейс
 @app.get("/", response_class=HTMLResponse)
@@ -99,6 +106,3 @@ async def webhook(request: Request):
     update = Update(**data)
     await dp.feed_update(bot, update)
     return JSONResponse(status_code=200, content={})
-
-
-
