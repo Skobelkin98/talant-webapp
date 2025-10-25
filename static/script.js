@@ -14,13 +14,17 @@ function renderTable(filter = "") {
     entries.forEach(([name, points]) => {
         const div = document.createElement("div");
         div.className = "person";
-        div.innerHTML = `<span>${name}</span><span>${points} баллов</span>`;
+        div.innerHTML = `<span class="name" onclick="editUser('${name}')">${name}</span><span>${points} баллов</span>`;
         table.appendChild(div);
     });
 }
 
 async function addUser() {
     const username = window.Telegram.WebApp.initDataUnsafe?.user?.username || '';
+    if (!['Pavel_Skobyolkin', 'dariaskob', 'Wolfram183', 'artem_Christian'].includes(username)) {
+        alert("У вас нет прав для редактирования!");
+        return;
+    }
     const name = prompt("Имя и фамилия:");
     if (!name) return;
     const points = parseInt(prompt("Количество баллов (можно отрицательное):") || "0");
@@ -36,6 +40,10 @@ async function addUser() {
 
 async function changePoints() {
     const username = window.Telegram.WebApp.initDataUnsafe?.user?.username || '';
+    if (!['Pavel_Skobyolkin', 'dariaskob', 'Wolfram183', 'artem_Christian'].includes(username)) {
+        alert("У вас нет прав для редактирования!");
+        return;
+    }
     const name = prompt("Кому изменить баллы?");
     if (!name) return;
     const points = parseInt(prompt("Изменение (например, 5 или -10):") || "0");
@@ -51,6 +59,10 @@ async function changePoints() {
 
 async function deleteUser() {
     const username = window.Telegram.WebApp.initDataUnsafe?.user?.username || '';
+    if (!['Pavel_Skobyolkin', 'dariaskob', 'Wolfram183', 'artem_Christian'].includes(username)) {
+        alert("У вас нет прав для редактирования!");
+        return;
+    }
     const name = prompt("Кого удалить?");
     if (!name) return;
     if (!confirm(`Удалить ${name}?`)) return;
@@ -62,6 +74,37 @@ async function deleteUser() {
     const result = await response.json();
     if (result.status === "error") alert(result.message);
     await loadData();
+}
+
+async function editUser(name) {
+    const username = window.Telegram.WebApp.initDataUnsafe?.user?.username || '';
+    if (!['Pavel_Skobyolkin', 'dariaskob', 'Wolfram183', 'artem_Christian'].includes(username)) {
+        alert("У вас нет прав для редактирования!");
+        return;
+    }
+    const newName = prompt("Новое ФИО (оставьте пустым для пропуска):", name);
+    const points = parseInt(prompt("Новые баллы (оставьте пустым для пропуска):", data[name]) || data[name]);
+    if (newName !== null || !isNaN(points)) {
+        if (newName && newName !== name) {
+            await fetch("/api/delete", {
+                method: "POST",
+                headers: {"Content-Type": "application/json", "X-Telegram-Username": username},
+                body: JSON.stringify({name})
+            });
+            await fetch("/api/add", {
+                method: "POST",
+                headers: {"Content-Type": "application/json", "X-Telegram-Username": username},
+                body: JSON.stringify({name: newName, points})
+            });
+        } else if (!isNaN(points)) {
+            await fetch("/api/add", {
+                method: "POST",
+                headers: {"Content-Type": "application/json", "X-Telegram-Username": username},
+                body: JSON.stringify({name, points})
+            });
+        }
+        await loadData();
+    }
 }
 
 document.getElementById("search").addEventListener("input", (e) => {
